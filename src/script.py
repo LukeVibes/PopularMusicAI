@@ -1,9 +1,13 @@
 import pandas as pd
+import numpy as np
 from sklearn.model_selection import KFold
 from sklearn import preprocessing
 from preperation import mergeData
 from preperation import BofW
 from preperation import autoLabelEncoding
+
+from LogisticalRegression import LogiRegrTrain
+from LogisticalRegression import LogiRegrPredict
 
 
 #  --------------------------------------
@@ -32,7 +36,9 @@ autoLabelEncoding(data)
 #Step Three: set Features and Labels
 #- - - - - - - - - - - - - - - - - -
 #For now we will not inlcude lyrics, to see how it imporves the guess...
-X = pd.DataFrame(data['genre'].copy())
+#'acousticness','danceability','duration_ms','energy','instrumentalness','key','liveness','loudness','mode','speechiness','tempo','time_signature'
+
+X = pd.DataFrame(data[['genre', 'acousticness', 'danceability', 'duration_ms', 'energy', 'instrumentalness', 'key', 'liveness', 'loudness', 'mode', 'speechiness', 'tempo', 'time_signature']].copy())
 y = pd.DataFrame(data['popularity'].copy())
 
 
@@ -52,6 +58,7 @@ for index, row in y.iterrows():
 		y.iloc[index, 0] = 0
 y.rename(columns={0: 'popularity'}, inplace=True)
 
+
 print("\t[DONE]")
 
 
@@ -63,6 +70,7 @@ print("\t[DONE]")
 
 #Step Zero: create 5-fold cross validation and start classifying
 #- - - - - - - - - - - - - - - - - -
+fold=1
 cv = KFold(n_splits=5, shuffle=True)
 for train_index_array, test_index_array in cv.split(X):
 
@@ -71,3 +79,34 @@ for train_index_array, test_index_array in cv.split(X):
 
 	X_test  = X.iloc[test_index_array,:]
 	y_test  = y.iloc[test_index_array,:]
+
+	X_train = X_train.reset_index(drop=True)
+	y_train = y_train.reset_index(drop=True)
+	X_test  = X_test.reset_index(drop=True)
+	y_test  = y_test.reset_index(drop=True)	
+
+
+	#LOGISTICAL REGRESSION
+	weights = LogiRegrTrain(X_train, y_train)
+	predictions = LogiRegrPredict(X_test, weights)
+	predictions = pd.DataFrame(data=predictions)
+
+	for index, row in predictions.iterrows():
+		if predictions.iloc[index,0] >= 0.5:
+			predictions.iloc[index,0] = 1
+		else:
+			predictions.iloc[index,0] = 0
+
+	correctCount=0
+	for index, row in y_test.iterrows():
+		if predictions.iloc[index,0] == y_test.iloc[index,0]:
+			correctCount += 1
+
+	print("\nRound: ", fold, "/5")
+	print(" ---------------------------------------- ")	
+	print("| Logistical Regression accuracy: ", format(correctCount/y_test.shape[0], ".2f"), " |")
+	print(" ---------------------------------------- ")
+
+
+
+	fold += 1
