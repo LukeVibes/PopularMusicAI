@@ -9,6 +9,9 @@ from preperation import autoLabelEncoding
 from LogisticalRegression import LogiRegrTrain
 from LogisticalRegression import LogiRegrPredict
 
+from NearestKClassifiction import KNNMeasure
+from NearestKClassifiction import KNNPredict
+
 
 #  --------------------------------------
 #    Part One: Prepare data for 
@@ -71,6 +74,7 @@ print("\t[DONE]")
 #Step Zero: create 5-fold cross validation and start classifying
 #- - - - - - - - - - - - - - - - - -
 fold=1
+countPopular=0
 cv = KFold(n_splits=5, shuffle=True)
 for train_index_array, test_index_array in cv.split(X):
 
@@ -87,26 +91,59 @@ for train_index_array, test_index_array in cv.split(X):
 
 
 	#LOGISTICAL REGRESSION
-	weights = LogiRegrTrain(X_train, y_train)
-	predictions = LogiRegrPredict(X_test, weights)
-	predictions = pd.DataFrame(data=predictions)
+	if (1==0):
+		weights = LogiRegrTrain(X_train, y_train)
+		predictions = LogiRegrPredict(X_test, weights)
+		predictions = pd.DataFrame(data=predictions)
 
-	for index, row in predictions.iterrows():
-		if predictions.iloc[index,0] >= 0.5:
-			predictions.iloc[index,0] = 1
-		else:
-			predictions.iloc[index,0] = 0
+		for index, row in predictions.iterrows():
+			if predictions.iloc[index,0] >= 0.5:
+				predictions.iloc[index,0] = 1
+			else:
+				predictions.iloc[index,0] = 0
 
-	correctCount=0
-	for index, row in y_test.iterrows():
-		if predictions.iloc[index,0] == y_test.iloc[index,0]:
-			correctCount += 1
+		correctCount=0
+		
+		for index, row in y_test.iterrows():
+			if predictions.iloc[index,0] == y_test.iloc[index,0]:
+				correctCount += 1
+			if y_test.iloc[index,0] == 1:
+					countPopular+=1
 
-	print("\nRound: ", fold, "/5")
-	print(" ---------------------------------------- ")	
-	print("| Logistical Regression accuracy: ", format(correctCount/y_test.shape[0], ".2f"), " |")
-	print(" ---------------------------------------- ")
+		print("Round: ", fold, "/5, pop:", countPopular)
+		print(" ---------------------------------------- ")	
+		print("| Logistical Regression accuracy: ", format(correctCount/y_test.shape[0], ".2f"), " |")
+		print(" ---------------------------------------- ")
 
 
 
+	#NEAREST-K CLASSIFICATION
+	if (1==0):
+		merged_train = pd.DataFrame(pd.merge(X_train, y_train, left_index=True, right_index=True))
+		merged_test = pd.DataFrame(pd.merge(X_test, y_test, left_index=True, right_index=True))
+
+		k = int(np.sqrt(merged_train.shape[0]))
+		guesses = []
+		for index, row in merged_test.iterrows():
+			print(index,"/",merged_test.shape[0])
+			distsToTestpoint = KNNMeasure(merged_train, row, 'popularity')
+			guess = KNNPredict(distsToTestpoint, k)
+			guesses.append(guess)
+
+		correct=0
+		for i in range(0, len(guesses)):
+			if guesses[i] == y_test[i]:
+				correct+=1
+
+		print("knn accuracy: ", correct/len(guesses))
+		print(guesses)
+
+
+	#NAIVE BAYESIAN CLASSIFICATION
+
+
+
+
+	#SUPPORT VECTOR MACHINE CLASSIFICATION
 	fold += 1
+
