@@ -3,7 +3,7 @@
 <br />
 <p align="center">
   <a href="https://github.com/othneildrew/Best-README-Template">
-    <img src="logo.png" alt="Logo" width="80" height="80">
+    <img src="music.jpg" alt="Logo">
   </a>
 
   <h3 align="center">Predicting Emotional Response to Popular Songs</h3>
