@@ -3,6 +3,7 @@ import numpy as np
 import string
 import nltk
 from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer 
 stopwords = set(stopwords.words('english'))
 stopwords.add('')
 stopwords.add('im')
@@ -26,6 +27,19 @@ def mergeData():
 
 	return mergeredSet
 
+
+def BofW_Giver(ds):
+
+	#Create global wordset + first round of cleaning data
+	wordSet = totalWordSet(ds)
+
+	#Second round of cleaning data
+	minMaxBOWTrimmer(ds, wordSet)
+
+	#Create each songs(row) bag-of-words
+	bow = bagOfWordsGenerator2(ds, wordSet)
+
+	return bow
 
 
 def BofW(ds):
@@ -64,15 +78,16 @@ def minMaxBOWTrimmer(ds, ws):
 	#create bow and indoc
 	for index, row in ds.iterrows():
 		lyrics = row['text'].strip()
-		lyrics.translate(str.maketrans('','', string.punctuation)) #removes punctuation words
+		lyrics.translate(str.maketrans('','', string.punctuation))
 		lyrics = lyrics.lower()
 		lyrics = lyrics.replace('\n', '')
 		lyrics = lyrics.split(' ')
-		lyrics = [punctuationKiller(w) for w in lyrics]            #removes punctuation in words
-		trimmedLyrics = [word for word in lyrics if word not in stopwords]
+		lyrics = [word for word in lyrics if word not in stopwords]
+		lyrics = [PorterStemmer().stem(word) for word in lyrics]
+		lyrics = [punctuationKiller(w) for w in lyrics]
 
 		wordsWeCounted = []
-		for word in trimmedLyrics:
+		for word in lyrics:
 			if (word not in wordsWeCounted):
 				indoc[word] += 1
 				wordsWeCounted.append(word)
@@ -107,9 +122,12 @@ def totalWordSet(ds):
 		lyrics = lyrics.lower()
 		lyrics = lyrics.replace('\n', '')
 		lyrics = lyrics.split(' ')
+		lyrics = [word for word in lyrics if word not in stopwords]
+		lyrics = [PorterStemmer().stem(word) for word in lyrics]
 		lyrics = [punctuationKiller(w) for w in lyrics]
-		trimmedLyrics = [word for word in lyrics if word not in stopwords]
-		wordSet = wordSet.union(set(trimmedLyrics))
+		
+
+		wordSet = wordSet.union(set(lyrics))
 
 
 		# if(index < 2):
@@ -133,6 +151,7 @@ def bagOfWordsGenerator(ds, ws):
 	ds["bow"] = np.zeros
 
 	for index, row in ds.iterrows():
+		print(index)
 		bow = {}
 		zeros = [0] * len(ws)
 		bow = dict(zip(ws, zeros))
@@ -142,15 +161,51 @@ def bagOfWordsGenerator(ds, ws):
 		lyrics = lyrics.lower()
 		lyrics = lyrics.replace('\n', '')
 		lyrics = lyrics.split(' ')
+		lyrics = [word for word in lyrics if word not in stopwords]
+		lyrics = [PorterStemmer().stem(word) for word in lyrics]
 		lyrics = [punctuationKiller(w) for w in lyrics]
-		trimmedLyrics = [word for word in lyrics if word not in stopwords]
 
-		for word in trimmedLyrics:
+		for word in lyrics:
 			if (word in bow):
 				bow[word] += 1
 
+
 		ds.at[index, 'bow'] = str(bow)
 	print("[DONE]")
+
+def bagOfWordsGenerator2(ds, ws):
+	print("generating each songs BofW...", end =" ")
+	ds["bow"] = np.zeros
+
+	simpleDF = [[0]*len(ws)]
+
+	for index, row in ds.iterrows():
+		bow = {}
+		zeros = [0] * len(ws)
+		bow = dict(zip(ws, zeros))
+
+		lyrics = row['text'].strip()
+		lyrics.translate(str.maketrans('','', string.punctuation))
+		lyrics = lyrics.lower()
+		lyrics = lyrics.replace('\n', '')
+		lyrics = lyrics.split(' ')
+		lyrics = [word for word in lyrics if word not in stopwords]
+		lyrics = [PorterStemmer().stem(word) for word in lyrics]
+		lyrics = [punctuationKiller(w) for w in lyrics]
+
+		for word in lyrics:
+			if (word in bow):
+				bow[word] += 1
+
+		simpleDF.append(list(bow.values()))
+
+	
+	print("[DONE]")
+
+	newDf = pd.DataFrame(simpleDF, columns=list(bow.keys()))
+
+	return newDf
+
 
 
 def autoLabelEncoding(ds):

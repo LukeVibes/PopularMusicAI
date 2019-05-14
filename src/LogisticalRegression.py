@@ -67,7 +67,6 @@ def costFunction(myTheta, myX, myY):
 	# print("myTheta.shape: ", myTheta.shape)
 	# print("sigmoid(myX, myTheta): ", sigmoid(myX, myTheta))
 
-
 	cost = -(1/size) * np.sum(  (myY) * np.log(sigmoid(myX, myTheta)) + (1-myY) * np.log(1 - sigmoid(myX, myTheta))  )
 	return cost
 

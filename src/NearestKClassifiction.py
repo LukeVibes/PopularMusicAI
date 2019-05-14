@@ -8,16 +8,28 @@ import pandas as pd
 #        myTestpoint: single row (aka datapoint) form the test set (pd.Dataframe or pd.Series)
 #		 classColName: name of the column with the class info form the training set (string)
 # Output: sorted distances with class info
-def KNNMeasure(myTrain, myTestpoint, classColName):
+def KNNMeasure(myTrain, myTestpoint, classColNum):
 	
 	distances = []
-	for index, datapoint in myTrain.iterrows():
-		classType = datapoint[classColName]
-		dist = euclideanDistance(myTestpoint, datapoint)
+	for index in range(int(myTrain.shape[0]/1)):
+		classType = myTrain[index, classColNum]
+		dist = euclideanDistance(myTestpoint, myTrain[index])
 		distances.append([dist, classType])
+	sortedDistances = sorted(distances, key = lambda tup: tup[0])
+	return sortedDistances
 
-	
-	return sorted(distances, key = lambda tup: tup[0])
+
+def KNNMeasureMatrix(myTrain, classColName):
+
+	measureMatrix = np.zeros((myTrain.shape[0], myTrain.shape[0]))
+	myTrain = myTrain.to_numpy()
+	for i in range(myTrain.shape[0]):
+		for j in range(myTrain.shape[0]):
+			measureMatrix[i][j] = euclideanDistance(myTrain[i, :] , myTrain[j, :])
+
+
+
+
 
 
 # Decr: This function is calcualtes the distnace between a testpoint and trainpoin
@@ -30,7 +42,7 @@ def euclideanDistance(myTestpoint, myTrainpoint):
 	totalSoFar=0
 	features = myTrainpoint.shape[0] - 1 #as it is a series of just features, we can do this
 	for feat in range(0, features):
-		totalSoFar += np.power((myTrainpoint.iloc[feat] - myTestpoint.iloc[feat]), 2)
+		totalSoFar += np.power((myTrainpoint[feat] - myTestpoint[feat]), 2)
 
 	return np.sqrt(totalSoFar)
 
