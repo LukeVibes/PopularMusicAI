@@ -29,8 +29,8 @@
   * [Installation](#installation)
   * [Usage](#usage)
  * [Data Preparation](#data-preparation) 
-* [AI Strategies Used](#AI Strategies)
-* [Results And Accuracy](#Results)
+* [AI Strategies Used](#ai-strategies)
+* [Results And Accuracy](#results)
 * [Contact](#contact)
 
 
