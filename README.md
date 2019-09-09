@@ -29,8 +29,8 @@
   * [Installation](#installation)
   * [Usage](#usage)
  * [Data Preparation](#data-preparation) 
-* [AI Strategies Used](#contributing)
-* [Results And Accuracy](#contributing)
+* [AI Strategies Used](#AI Strategies)
+* [Results And Accuracy](#Results)
 * [Contact](#contact)
 
 
@@ -129,7 +129,7 @@ The next step in trimming was performing a min max trim on the wordset. This pro
 
 Once all these trimmings were done, the bag-of-words was ready to be created for each song. This process was simple, use the wordset to count the frequency of each word within each song’s lyrics.
 
-<!-- CONTRIBUTING -->
+<!-- AI Strategies -->
 ## AI Strategies
 
 ### Logistic Regression
@@ -172,7 +172,7 @@ K Nearest is not a traditional classification algorithm as it does not really ha
 
 
 
-<!-- LICENSE -->
+<!-- Results -->
 ## Results
 
 ### Gaussian Naive Bayes
